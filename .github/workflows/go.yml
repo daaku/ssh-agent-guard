@@ -1,0 +1,18 @@
+name: Go
+on: [push]
+permissions:
+  contents: write
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+      - run: go mod download
+      - run: go mod tidy -diff
+      - run: test -z "$(git status --porcelain)"
+      - run: go build -v -trimpath ./...
+      - run: go test -v -trimpath ./...
