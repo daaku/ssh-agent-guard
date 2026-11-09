@@ -1,0 +1,10 @@
+[Unit]
+Description=ssh-agent proxy that unlocks the Secret Service on demand
+Requires=ssh-agent-guard.socket
+
+[Service]
+# Path to the real agent. Override with `systemctl --user edit ssh-agent-guard`,
+# e.g. Environment=SSH_AGENT_GUARD_UPSTREAM=%t/gcr/ssh
+Environment=SSH_AGENT_GUARD_UPSTREAM=%t/ssh-agent.socket
+ExecStart=%h/go/bin/ssh-agent-guard
+Restart=on-failure

@@ -1,0 +1,57 @@
+#!/bin/sh
+# Minimal stand-in for busctl, emulating a Secret Service with a locked
+# default collection. State lives in $FAKE_STATE:
+#   unlocked   - present once the collection is unlocked
+#   completed  - present once the prompt finished (contains "true" if dismissed)
+#   calls      - log of the methods invoked
+# Set FAKE_DISMISS=1 to make the prompt get dismissed.
+set -eu
+s="$FAKE_STATE"
+while [ $# -gt 0 ]; do
+	case "$1" in --*) shift ;; *) break ;; esac
+done
+cmd="$1"
+shift
+case "$cmd" in
+call)
+	method="$4"
+	echo "$method" >>"$s/calls"
+	case "$method" in
+	ReadAlias) echo '{"type":"o","data":["/org/freedesktop/secrets/collection/login"]}' ;;
+	Unlock)
+		if [ -e "$s/unlocked" ]; then
+			echo '{"type":"aoo","data":[["/org/freedesktop/secrets/collection/login"],"/"]}'
+		else
+			echo '{"type":"aoo","data":[[],"/org/freedesktop/secrets/prompt/p1"]}'
+		fi
+		;;
+	Prompt)
+		(
+			sleep 0.3
+			if [ "${FAKE_DISMISS:-}" = 1 ]; then
+				echo true >"$s/completed"
+			else
+				touch "$s/unlocked"
+				echo false >"$s/completed"
+			fi
+		) >/dev/null 2>&1 &
+		;;
+	*) echo "unknown method $method" >&2; exit 1 ;;
+	esac
+	;;
+get-property)
+	echo Locked >>"$s/calls"
+	if [ -e "$s/unlocked" ]; then
+		echo '{"type":"b","data":false}'
+	else
+		echo '{"type":"b","data":true}'
+	fi
+	;;
+monitor)
+	echo monitor >>"$s/calls"
+	while [ ! -e "$s/completed" ]; do sleep 0.05; done
+	echo "{\"type\":\"signal\",\"path\":\"/org/freedesktop/secrets/prompt/p1\",\"interface\":\"org.freedesktop.Secret.Prompt\",\"member\":\"Completed\",\"payload\":{\"type\":\"bv\",\"data\":[$(cat "$s/completed"),{\"type\":\"s\",\"data\":\"\"}]}}"
+	exec sleep 60
+	;;
+*) echo "unknown command $cmd" >&2; exit 1 ;;
+esac

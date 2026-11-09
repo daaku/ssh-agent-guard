@@ -1,0 +1,10 @@
+[Unit]
+Description=ssh-agent proxy that unlocks the Secret Service on demand
+
+[Socket]
+ListenStream=%t/ssh-agent-guard.socket
+SocketMode=0600
+DirectoryMode=0700
+
+[Install]
+WantedBy=sockets.target
