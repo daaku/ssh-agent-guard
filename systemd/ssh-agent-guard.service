@@ -6,5 +6,5 @@ Requires=ssh-agent-guard.socket
 # Path to the real agent. Override with `systemctl --user edit ssh-agent-guard`,
 # e.g. Environment=SSH_AGENT_GUARD_UPSTREAM=%t/gcr/ssh
 Environment=SSH_AGENT_GUARD_UPSTREAM=%t/ssh-agent.socket
-ExecStart=%h/go/bin/ssh-agent-guard
+ExecStart=/usr/bin/ssh-agent-guard
 Restart=on-failure

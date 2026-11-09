@@ -8,8 +8,7 @@ retries the request. Every other message is passed through byte for byte.
 ## Install
 
 ```sh
-go install github.com/daaku/ssh-agent-guard@latest
-cp systemd/ssh-agent-guard.{socket,service} ~/.config/systemd/user/
+makepkg -si
 systemctl --user edit ssh-agent-guard   # set SSH_AGENT_GUARD_UPSTREAM if not %t/ssh-agent.socket
 systemctl --user enable --now ssh-agent-guard.socket
 ```

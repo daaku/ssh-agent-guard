@@ -1,1 +1,4 @@
-/ssh-agent-guard
+/build/
+/src/
+/pkg/
+*.pkg.tar.*
